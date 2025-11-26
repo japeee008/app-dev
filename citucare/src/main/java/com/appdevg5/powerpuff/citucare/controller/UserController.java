@@ -9,7 +9,7 @@ import com.appdevg5.powerpuff.citucare.service.UserService;
 import com.appdevg5.powerpuff.citucare.repository.DepartmentRepository;
 
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/users")
 public class UserController {
 
     @Autowired
