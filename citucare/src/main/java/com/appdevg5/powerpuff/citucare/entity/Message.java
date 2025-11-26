@@ -29,7 +29,6 @@ public class Message {
     @JoinColumn(name = "category_id")
     private Category category;
 
-    // Constructor
     public Message() {
     }
 
@@ -41,7 +40,6 @@ public class Message {
         this.category = category;
     }
 
-    // Getters and Setters
     public Long getMessageId() {
         return messageId;
     }

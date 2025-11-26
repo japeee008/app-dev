@@ -23,7 +23,6 @@ public class Department {
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 
-    // Constructor
     public Department() {
     }
 
@@ -34,7 +33,6 @@ public class Department {
         this.updatedAt = updatedAt;
     }
 
-    // Getters and Setters
     public Long getDepartmentId() {
         return departmentId;
     }
