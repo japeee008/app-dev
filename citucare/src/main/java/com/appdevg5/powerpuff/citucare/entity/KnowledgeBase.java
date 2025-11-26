@@ -44,7 +44,6 @@ public class KnowledgeBase {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
-    // Constructor
     public KnowledgeBase() {
     }
 
@@ -68,7 +67,6 @@ public class KnowledgeBase {
         this.updatedAt = LocalDateTime.now();
     }
 
-    // Getters and Setters
     public Long getKbId() {
         return kbId;
     }

@@ -17,7 +17,6 @@ public class Session {
     @Column(nullable = false)
     private LocalDateTime lastActivityAt;
 
-    // Constructor
     public Session() {
     }
 
@@ -26,7 +25,6 @@ public class Session {
         this.lastActivityAt = lastActivityAt;
     }
 
-    // Getters and Setters
     public Long getSessionId() {
         return sessionId;
     }

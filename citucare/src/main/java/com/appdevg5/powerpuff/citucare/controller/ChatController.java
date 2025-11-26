@@ -38,11 +38,9 @@ public class ChatController {
             }
         }
 
-        // store user message
         Message userMsg = new Message(session, messageText, null, LocalDateTime.now(), null);
         messageService.save(userMsg);
 
-        // simple echo bot (replace with KB matching later)
         String botReply = "Echo: " + messageText;
         Message botMsg = new Message(session, null, botReply, LocalDateTime.now(), null);
         messageService.save(botMsg);

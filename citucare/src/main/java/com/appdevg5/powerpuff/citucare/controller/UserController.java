@@ -9,7 +9,7 @@ import com.appdevg5.powerpuff.citucare.service.UserService;
 import com.appdevg5.powerpuff.citucare.repository.DepartmentRepository;
 
 @RestController
-@RequestMapping("/users")
+@RequestMapping("/api/users")
 public class UserController {
 
     @Autowired
@@ -23,7 +23,6 @@ public class UserController {
 
     @PostMapping
     public User create(@RequestBody User u) {
-        // Fetch the Department from DB if only ID is provided
         if (u.getDepartment() != null && u.getDepartment().getDepartmentId() != null) {
             Department dept = departmentRepository.findById(u.getDepartment().getDepartmentId()).orElse(null);
             if (dept != null) {

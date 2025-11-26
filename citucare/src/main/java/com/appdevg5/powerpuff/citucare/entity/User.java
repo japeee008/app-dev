@@ -40,7 +40,6 @@ public class User {
     @JoinColumn(name = "department_id", nullable = false)
     private Department department;
 
-    // Constructor
     public User() {
     }
 
@@ -57,7 +56,6 @@ public class User {
         this.updatedAt = LocalDateTime.now();
     }
 
-    // Getters and Setters
     public Long getUserId() {
         return userId;
     }
