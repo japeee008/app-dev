@@ -3,7 +3,7 @@ import { Users, MessageSquare, Layers, TrendingUp } from 'lucide-react';
 import chatService from '../../services/chatService';
 import axios from 'axios';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080/api';
 
 const AdminDashboard = () => {
   const [conversations, setConversations] = useState(null);

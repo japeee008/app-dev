@@ -7,7 +7,7 @@ import com.appdevg5.powerpuff.citucare.entity.KnowledgeBase;
 import com.appdevg5.powerpuff.citucare.service.KnowledgeBaseService;
 
 @RestController
-@RequestMapping("/kb")
+@RequestMapping("/api/kb")
 @CrossOrigin(origins = "http://localhost:3000")
 public class KnowledgeBaseController {
 
