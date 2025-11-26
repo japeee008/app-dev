@@ -14,7 +14,6 @@ public class CategoryService {
     private CategoryRepository categoryRepository;
 
     public Category saveCategory(Category category) {
-        // Set createdAt if new (id is null), always update updatedAt
         if (category.getId() == null) {
             category.setCreatedAt(LocalDateTime.now());
         }

@@ -7,7 +7,7 @@ import com.appdevg5.powerpuff.citucare.entity.Category;
 import com.appdevg5.powerpuff.citucare.service.CategoryService;
 
 @RestController
-@RequestMapping("/categories")
+@RequestMapping("/api/categories")
 public class CategoryController {
 
     @Autowired

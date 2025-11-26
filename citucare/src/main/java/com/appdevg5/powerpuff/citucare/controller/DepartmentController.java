@@ -7,7 +7,7 @@ import com.appdevg5.powerpuff.citucare.entity.Department;
 import com.appdevg5.powerpuff.citucare.service.DepartmentService;
 
 @RestController
-@RequestMapping("/departments")
+@RequestMapping("/api/departments")
 public class DepartmentController {
 
     @Autowired
