@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import com.appdevg5.powerpuff.citucare.entity.KnowledgeBase;
 import com.appdevg5.powerpuff.citucare.service.KnowledgeBaseService;
+import com.appdevg5.powerpuff.citucare.dto.KnowledgeBaseDto;
 
 @RestController
 @RequestMapping("/api/kb")
@@ -14,9 +15,9 @@ public class KnowledgeBaseController {
     @Autowired
     private KnowledgeBaseService kbService;
 
-    @GetMapping
-    public List<KnowledgeBase> all() {
-        return kbService.findAll();
+  @GetMapping
+    public List<KnowledgeBaseDto> all() {
+        return kbService.getAllKnowledgeBaseDtos();
     }
 
     @PostMapping

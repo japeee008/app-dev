@@ -16,8 +16,8 @@ public class Message {
     @JoinColumn(name = "session_id", nullable = false)
     private Session session;
 
-    @Column(nullable = false, columnDefinition = "TEXT")
-    private String messageText;
+    @Column(columnDefinition = "TEXT")
+    private String messageText; 
 
     @Column(columnDefinition = "TEXT")
     private String botReply;

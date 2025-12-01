@@ -6,7 +6,7 @@ const chatService = {
   // Send a message to the chatbot
   sendMessage: async (message) => {
     try {
-      const response = await axios.post(`${API_BASE_URL}/api/chat`, {
+      const response = await axios.post(`${API_BASE_URL}/chat`, {
         message,
       });
       return response.data;
@@ -19,7 +19,7 @@ const chatService = {
   // Get chat history
   getChatHistory: async () => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/api/chat/history`);
+      const response = await axios.get(`${API_BASE_URL}/chat/history`);
       return response.data;
     } catch (error) {
       console.error('Error fetching chat history:', error);
