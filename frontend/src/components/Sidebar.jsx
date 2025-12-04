@@ -26,15 +26,24 @@ const Sidebar = ({
         } fixed md:static md:translate-x-0 w-64 h-screen bg-primary text-white transition-transform duration-300 ease-in-out z-50 flex flex-col`}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-800">
-          <h2 className="text-lg font-semibold">Chats</h2>
+        <div className="flex items-center justify-center p-9 border-b border-primary">
+          <img 
+              src="/wildcare.jpg" 
+              alt="CITU-CARE Logo" 
+              className="h-15 w-15 object-contain "
+              onError={(e) => {
+                e.target.style.display = 'none';
+              }}
+          />
+          {/* <h2 className="text-lg font-semibold">Chats</h2>
           <button
             onClick={onClose}
             className="md:hidden p-1 hover:bg-gray-800 rounded"
           >
             <X size={20} />
-          </button>
+          </button> */}
         </div>
+        
 
         {/* New Chat Button */}
         <button
@@ -42,7 +51,7 @@ const Sidebar = ({
             onNewChat();
             onClose();
           }}
-          className="m-4 flex items-center justify-center gap-2 w-auto bg-secondary hover:bg-red-800 text-black rounded-lg px-4 py-3 font-medium transition-colors">
+          className="m-5 flex items-center justify-center gap-2 w-auto bg-secondary hover:bg-gray-50 text-black rounded-lg px-3 py-3 font-medium transition-colors">
           <Plus size={20} />
           New Chat
         </button>
@@ -90,7 +99,7 @@ const Sidebar = ({
         </div>
 
         {/* Settings */}
-        <div className="border-t border-gray-800 p-4">
+        <div className="border-t border-primary p-4">
           <button className="w-full flex items-center gap-3 px-3 py-2 hover:bg-gray-800 rounded-lg transition-colors">
             <Settings size={18} />
             <span className="text-sm">Settings</span>

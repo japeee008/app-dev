@@ -12,20 +12,20 @@ const ChatHeader = ({ onMenuClick }) => {
           >
             <Menu size={24} className="text-gray-700" />
           </button>
-          <div className="flex items-center gap-3">
-            <img 
+          {/* <div className="flex items-center gap-3">
+            {/* <img 
               src="/wildcare.jpg" 
               alt="CITU-CARE Logo" 
               className="h-10 w-10 object-contain rounded-full"
               onError={(e) => {
                 e.target.style.display = 'none';
               }}
-            />
+            /> */} 
             <div>
               <h1 className="text-2xl font-bold text-gray-900">CITU-CARE</h1>
               <p className="text-xs text-gray-500">Chat Assistant</p>
             </div>
-          </div>
+          {/* </div> */}
         </div>
         <div className="text-right">
           <p className="text-sm text-gray-500">Always here to help</p>
