@@ -23,7 +23,7 @@ const Sidebar = ({
       <div
         className={`${
           isOpen ? 'translate-x-0' : '-translate-x-full'
-        } fixed md:static md:translate-x-0 w-64 h-screen bg-gray-900 text-white transition-transform duration-300 ease-in-out z-50 flex flex-col`}
+        } fixed md:static md:translate-x-0 w-64 h-screen bg-primary text-white transition-transform duration-300 ease-in-out z-50 flex flex-col`}
       >
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-800">
@@ -42,8 +42,7 @@ const Sidebar = ({
             onNewChat();
             onClose();
           }}
-          className="m-4 flex items-center justify-center gap-2 w-auto bg-red-700 hover:bg-red-800 rounded-lg px-4 py-3 font-medium transition-colors"
-        >
+          className="m-4 flex items-center justify-center gap-2 w-auto bg-secondary hover:bg-red-800 text-black rounded-lg px-4 py-3 font-medium transition-colors">
           <Plus size={20} />
           New Chat
         </button>
