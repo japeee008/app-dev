@@ -18,9 +18,12 @@ public class KnowledgeBaseService {
     private KnowledgeBaseRepository kbRepository;
 
     @Autowired
-    private ModelMapper modelMapper;   // like in your slide (UserServiceImpl)
+    private ModelMapper modelMapper;
 
-    // ============ ENTITY METHODS (same as before) ============
+    @Autowired
+    private NlpService nlpService;
+
+    // ============ SAVE ============
 
     public KnowledgeBase save(KnowledgeBase kb) {
         LocalDateTime now = LocalDateTime.now();
@@ -28,8 +31,17 @@ public class KnowledgeBaseService {
             kb.setCreatedAt(now);
         }
         kb.setUpdatedAt(now);
-        return kbRepository.save(kb);
+
+        KnowledgeBase saved = kbRepository.save(kb);
+
+        try {
+            nlpService.rebuildIndex();
+        } catch (Exception ignored) {}
+
+        return saved;
     }
+
+    // ============ BASIC CRUD ============
 
     public List<KnowledgeBase> findAll() {
         return kbRepository.findAll();
@@ -41,56 +53,39 @@ public class KnowledgeBaseService {
 
     public void deleteById(Long id) {
         kbRepository.deleteById(id);
+
+        try {
+            nlpService.rebuildIndex();
+        } catch (Exception ignored) {}
     }
 
-    // ============ DTO METHODS (NEW) ============
+    // ============ DTO METHODS ============
 
     public List<KnowledgeBaseDto> getAllKnowledgeBaseDtos() {
-        List<KnowledgeBase> list = kbRepository.findAll();
-
-        // Same pattern as: modelMapper.map(user, UserDto.class)
-        return list.stream()
+        return kbRepository.findAll().stream()
                 .map(kb -> modelMapper.map(kb, KnowledgeBaseDto.class))
                 .collect(Collectors.toList());
     }
 
     public KnowledgeBaseDto getKnowledgeBaseDtoById(Long id) {
         KnowledgeBase kb = kbRepository.findById(id).orElse(null);
-        if (kb == null) {
-            return null;
-        }
-        return modelMapper.map(kb, KnowledgeBaseDto.class);
+        return (kb == null) ? null : modelMapper.map(kb, KnowledgeBaseDto.class);
     }
 
+    // ============ NLP MATCHING ============
 
     public KnowledgeBase findMatchingKnowledgeBase(String userMessage) {
-    if (userMessage == null || userMessage.isBlank()) {
-        return null;
-    }
-
-    String normalized = userMessage.toLowerCase();
-
-    // use your existing repo method
-    List<KnowledgeBase> kbList = kbRepository.findByIsPublished(true);
-
-    for (KnowledgeBase kb : kbList) {
-        String patterns = kb.getQuestionPattern();
-        if (patterns == null || patterns.isBlank()) continue;
-
-        // split by comma or semicolon
-        String[] tokens = patterns.toLowerCase().split("[,;]");
-
-        for (String token : tokens) {
-            String keyword = token.trim();
-            if (keyword.isEmpty()) continue;
-
-            if (normalized.contains(keyword)) {
-                // first match wins
-                return kb;
-            }
+        if (userMessage == null || userMessage.isBlank()) {
+            return null;
         }
-    }
 
-    return null; // no match
-}
+        List<NlpService.SearchResult> results = nlpService.search(userMessage, 1);
+
+        if (results.isEmpty()) {
+            return null;
+        }
+
+        Long bestId = results.get(0).getId();
+        return kbRepository.findById(bestId).orElse(null);
+    }
 }
