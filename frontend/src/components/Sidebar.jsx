@@ -1,5 +1,7 @@
-import React from 'react';
-import { X, Plus, MessageSquare, Settings } from 'lucide-react';
+import React, { useState, useRef, useEffect } from "react";
+import { X, Plus, MessageSquare, Settings } from "lucide-react";
+import { UserCog } from "lucide-react";
+
 
 const Sidebar = ({
   isOpen,
@@ -9,9 +11,24 @@ const Sidebar = ({
   selectedCategory,
   onSelectCategory,
 }) => {
+  const [showSettingsMenu, setShowSettingsMenu] = useState(false);
+  const settingsRef = useRef(null);
+
+  // Close popup when clicking anywhere outside the menu
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (settingsRef.current && !settingsRef.current.contains(e.target)) {
+        setShowSettingsMenu(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   return (
     <>
-      {/* Overlay */}
+      {/* Overlay for mobile */}
       {isOpen && (
         <div
           className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
@@ -19,31 +36,21 @@ const Sidebar = ({
         />
       )}
 
-      {/* Sidebar */}
+      {/* Sidebar Container */}
       <div
         className={`${
-          isOpen ? 'translate-x-0' : '-translate-x-full'
+          isOpen ? "translate-x-0" : "-translate-x-full"
         } fixed md:static md:translate-x-0 w-64 h-screen bg-primary text-white transition-transform duration-300 ease-in-out z-50 flex flex-col`}
       >
-        {/* Header */}
+        {/* Logo Section */}
         <div className="flex items-center justify-center p-9 border-b border-primary">
-          <img 
-              src="/wildcare.jpg" 
-              alt="CITU-CARE Logo" 
-              className="h-15 w-15 object-contain "
-              onError={(e) => {
-                e.target.style.display = 'none';
-              }}
+          <img
+            src="/wildcare.jpg"
+            alt="CITU-CARE Logo"
+            className="h-15 w-15 object-contain"
+            onError={(e) => (e.target.style.display = "none")}
           />
-          {/* <h2 className="text-lg font-semibold">Chats</h2>
-          <button
-            onClick={onClose}
-            className="md:hidden p-1 hover:bg-gray-800 rounded"
-          >
-            <X size={20} />
-          </button> */}
         </div>
-        
 
         {/* New Chat Button */}
         <button
@@ -51,33 +58,21 @@ const Sidebar = ({
             onNewChat();
             onClose();
           }}
-          className="m-5 flex items-center justify-center gap-2 w-auto bg-secondary hover:bg-gray-50 text-black rounded-lg px-3 py-3 font-medium transition-colors">
+          className="m-5 flex items-center justify-center gap-2 bg-secondary hover:bg-gray-50 text-black rounded-lg px-3 py-3 font-medium transition-colors"
+        >
           <Plus size={20} />
           New Chat
         </button>
 
-        {/* Chat History */}
+        {/* Scrollable Middle Section */}
         <div className="flex-1 overflow-y-auto px-4 space-y-2">
-          <div className="py-2">
-            {/* <p className="text-xs font-semibold text-gray-400 mb-3">
-              CHAT HISTORY
-            </p>
-            <button className="w-full flex items-center gap-3 px-3 py-2 hover:bg-gray-800 rounded-lg transition-colors text-left">
-              <MessageSquare size={18} />
-              <span className="truncate text-sm">Today</span>
-            </button>
-            <button className="w-full flex items-center gap-3 px-3 py-2 hover:bg-gray-800 rounded-lg transition-colors text-left">
-              <MessageSquare size={18} />
-              <span className="truncate text-sm">Yesterday</span>
-            </button> */}
-          </div>
-
           {/* Categories */}
           {categories.length > 0 && (
             <div className="py-4 border-t border-gray-800">
               <p className="text-xs font-semibold text-gray-400 mb-3">
                 CATEGORIES
               </p>
+
               {categories.map((category) => (
                 <button
                   key={category.id}
@@ -87,8 +82,8 @@ const Sidebar = ({
                   }}
                   className={`w-full text-left px-3 py-2 rounded-lg transition-colors ${
                     selectedCategory?.id === category.id
-                      ? 'bg-red-700 text-white'
-                      : 'hover:bg-gray-800 text-gray-300'
+                      ? "bg-red-700 text-white"
+                      : "hover:bg-gray-800 text-gray-300"
                   }`}
                 >
                   <span className="text-sm">{category.categoryName}</span>
@@ -98,12 +93,35 @@ const Sidebar = ({
           )}
         </div>
 
-        {/* Settings */}
-        <div className="border-t border-primary p-4">
-          <button className="w-full flex items-center gap-3 px-3 py-2 hover:bg-gray-800 rounded-lg transition-colors">
+        {/* SETTINGS + POPUP */}
+        <div
+          className="border-t border-primary p-4 relative"
+          ref={settingsRef}
+        >
+          {/* Settings Button */}
+          <button
+            onClick={() => setShowSettingsMenu((prev) => !prev)}
+            className="w-full flex items-center gap-3 px-3 py-2 hover:bg-gray-800 rounded-lg transition-colors"
+          >
             <Settings size={18} />
             <span className="text-sm">Settings</span>
           </button>
+
+          {/* Popup Menu */}
+          {showSettingsMenu && (
+            <div className="absolute bottom-14 left-4 w-56 bg-gray-900 text-white rounded-lg shadow-lg border border-gray-700 py-2 z-50 animate-fadeIn">
+              <button
+                onClick={() => {
+                  setShowSettingsMenu(false);
+                  alert("Admin Login clicked");
+                }}
+                className="w-full flex items-center gap-2 px-3 py-2 hover:bg-gray-800 text-sm text-left"
+              >
+                <UserCog size={16} className="text-white" />
+                <span>Admin Login</span>
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </>
