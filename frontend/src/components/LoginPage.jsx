@@ -20,7 +20,9 @@ const LoginPage = () => {
       // optionally store user info
       try {
         localStorage.setItem('adminUser', JSON.stringify(res.data));
+        localStorage.setItem('isAdmin', 'true');
       } catch (e) {}
+
       navigate('/admin');
     }).catch(err => {
       console.error('login error', err);

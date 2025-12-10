@@ -18,10 +18,20 @@ const ChatContainer = () => {
     setErrorMessage, 
     clearError 
   } = useChat();
+
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [categories, setCategories] = useState([]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const messagesEndRef = useRef(null);
+
+  // 💬 Suggested questions for the empty state
+  const suggestedQuestions = [
+    "Where is the registrar's office located?",
+    "What are the requirements for enrolling in college?",
+    "Where do I access my grades?",
+    "How do I reset my student portal password?",
+    "What programs are offered this semester?"
+  ];
 
   // Auto-scroll to bottom when new messages arrive
   const scrollToBottom = () => {
@@ -32,7 +42,22 @@ const ChatContainer = () => {
     scrollToBottom();
   }, [messages]);
 
-  // Simulate initial bot message
+  // Load categories for the sidebar (optional but useful)
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const data = await chatService.getCategories();
+        if (Array.isArray(data)) {
+          setCategories(data);
+        }
+      } catch (err) {
+        console.error('Failed to load categories:', err);
+      }
+    };
+    loadCategories();
+  }, []);
+
+  // Initial bot message on first load
   useEffect(() => {
     const initialMessage = {
       id: 1,
@@ -41,7 +66,7 @@ const ChatContainer = () => {
       timestamp: new Date(),
     };
     setMessages([initialMessage]);
-  }, []);
+  }, [setMessages]);
 
   const handleSendMessage = async (text) => {
     if (!validateMessage(text)) {
@@ -85,6 +110,10 @@ const ChatContainer = () => {
     setSelectedCategory(null);
   };
 
+  // 👉 Only show suggestion chips when it's just the initial bot message
+  const hasOnlyInitialBotMessage =
+    messages.length === 1 && messages[0]?.sender === 'bot';
+
   return (
     <div className="flex h-screen overflow-hidden">
       <ErrorAlert message={error} onClose={clearError} />
@@ -105,6 +134,30 @@ const ChatContainer = () => {
 
         {/* Messages List */}
         <MessageList messages={messages} isLoading={isLoading} />
+
+        {/* Suggested questions under greeting */}
+        {hasOnlyInitialBotMessage && (
+          <div className="px-8 mt-2 mb-4">
+            <p className="text-center text-gray-500 text-sm mb-3">
+              You can start by asking one of these:
+            </p>
+            <div className="flex flex-wrap justify-center gap-3 max-w-3xl mx-auto">
+              {suggestedQuestions.map((q, i) => (
+                <button
+                  key={i}
+                  onClick={() => handleSendMessage(q)}
+                  className="
+                    bg-indigo-50 hover:bg-indigo-100
+                    text-sm px-4 py-2 rounded-full
+                    transition-colors shadow-sm
+                  "
+                >
+                  {q}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Message Input */}
         <MessageInput onSendMessage={handleSendMessage} disabled={isLoading} />

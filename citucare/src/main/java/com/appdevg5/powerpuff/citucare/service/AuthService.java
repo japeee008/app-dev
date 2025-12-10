@@ -5,7 +5,6 @@ import com.appdevg5.powerpuff.citucare.dto.AdminLoginResponseDto;
 import com.appdevg5.powerpuff.citucare.entity.Department;
 import com.appdevg5.powerpuff.citucare.entity.User;
 import com.appdevg5.powerpuff.citucare.repository.UserRepository;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -21,8 +20,8 @@ public class AuthService {
 
         if (request.getEmail() == null || request.getPassword() == null) {
             throw new ResponseStatusException(
-                HttpStatus.BAD_REQUEST,
-                "Email and password are required"
+                    HttpStatus.BAD_REQUEST,
+                    "Email and password are required"
             );
         }
 
@@ -30,31 +29,31 @@ public class AuthService {
                 .findByEmailIgnoreCase(request.getEmail())
                 .orElseThrow(() ->
                         new ResponseStatusException(
-                            HttpStatus.UNAUTHORIZED,
-                            "Invalid email or password"
+                                HttpStatus.UNAUTHORIZED,
+                                "Invalid email or password"
                         ));
 
-        // Check password
         if (!user.getPassword().equals(request.getPassword())) {
             throw new ResponseStatusException(
-                HttpStatus.UNAUTHORIZED,
-                "Invalid email or password"
+                    HttpStatus.UNAUTHORIZED,
+                    "Invalid email or password"
             );
         }
 
-        // Check ADMIN privilege
-        if (!Boolean.TRUE.equals(user.getIsAdmin())
-            || !"ADMIN".equalsIgnoreCase(user.getRole()))
-        {
+        System.out.println(
+                "DEBUG LOGIN => email=" + user.getEmail()
+                        + ", isAdmin=" + user.getIsAdmin()
+                        + ", rawRole='" + user.getRole() + "'"
+        );
+
+        if (!Boolean.TRUE.equals(user.getIsAdmin())) {
             throw new ResponseStatusException(
-                HttpStatus.FORBIDDEN,
-                "User is not authorized as Admin"
+                    HttpStatus.FORBIDDEN,
+                    "User is not authorized as Admin"
             );
         }
 
-        // ✅ Map User → DTO
         AdminLoginResponseDto dto = new AdminLoginResponseDto();
-
         dto.setUserId(user.getUserId());
         dto.setFname(user.getFname());
         dto.setLname(user.getLname());

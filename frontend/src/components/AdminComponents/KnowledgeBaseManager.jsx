@@ -1,5 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { Plus, Edit2, Trash2, AlertCircle, CheckCircle } from 'lucide-react';
+import {
+  Plus,
+  Edit2,
+  Trash2,
+  AlertCircle,
+  CheckCircle,
+  Search,
+} from 'lucide-react';
 import axios from 'axios';
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080/api';
@@ -13,31 +20,62 @@ const KnowledgeBaseManager = () => {
   const [success, setSuccess] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState(null);
+  const [searchTerm, setSearchTerm] = useState(''); // 🔍 search
+
+  // ---- current admin info from localStorage ----
+  let adminUser = null;
+  try {
+    const stored = localStorage.getItem('adminUser');
+    adminUser = stored ? JSON.parse(stored) : null;
+  } catch (e) {
+    adminUser = null;
+  }
+
+  const adminDeptId =
+    adminUser?.department?.departmentId ?? adminUser?.departmentId ?? null;
+  const adminDeptName =
+    adminUser?.department?.deptName ??
+    adminUser?.departmentName ??
+    'My Department';
+
+  const isSuperAdmin =
+    adminUser?.role === 'SuperAdmin' || adminUser?.isSuperAdmin === true;
+
+  const displayName = adminUser
+    ? `${adminUser.fname || ''} ${adminUser.lname || ''}`.trim() || 'Admin'
+    : 'Admin';
+
   const [formData, setFormData] = useState({
     title: '',
     questionPattern: '',
     answer: '',
     categoryId: '',
-    departmentId: '',
+    departmentId: isSuperAdmin ? '' : adminDeptId || '',
     isPublished: false,
-    createdBy: 'Admin',
-    updatedBy: 'Admin',
+    createdBy: displayName,
+    updatedBy: displayName,
   });
 
+  // initial load
   useEffect(() => {
     fetchKB();
     fetchCategories();
     fetchDepartments();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchKB = async () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await axios.get(`${API_BASE_URL}/kb`);
+      // superadmin -> all; dept admin -> only their department
+      const res = await axios.get(`${API_BASE_URL}/kb`, {
+        params: isSuperAdmin ? {} : { departmentId: adminDeptId },
+      });
 
       let raw = res.data;
       if (Array.isArray(raw)) {
+        // ok
       } else if (Array.isArray(raw.data)) {
         raw = raw.data;
       } else if (Array.isArray(raw.content)) {
@@ -75,7 +113,14 @@ const KnowledgeBaseManager = () => {
         updatedBy: row.updatedBy ?? row.updated_by ?? 'Admin',
       }));
 
-      setKbList(normalized);
+      const filtered =
+        !isSuperAdmin && adminDeptId
+          ? normalized.filter(
+              (kb) => kb.department?.departmentId === adminDeptId
+            )
+          : normalized;
+
+      setKbList(filtered);
     } catch (err) {
       console.error('KB fetch error:', err.response || err);
       setError(err.response?.data?.message || 'Failed to fetch knowledge base');
@@ -111,10 +156,14 @@ const KnowledgeBaseManager = () => {
         questionPattern: kb.questionPattern || '',
         answer: kb.answer || '',
         categoryId: kb.category?.id || kb.categoryId || '',
-        departmentId: kb.department?.departmentId || kb.departmentId || '',
+        // superadmin: use entry's dept; dept admin: always their own dept
+        departmentId: isSuperAdmin
+          ? kb.department?.departmentId || kb.departmentId || ''
+          : adminDeptId || '',
         isPublished: kb.isPublished || false,
-        createdBy: kb.createdBy || 'Admin',
-        updatedBy: kb.updatedBy || 'Admin',
+        // keep original creator; updatedBy will be current admin
+        createdBy: kb.createdBy || displayName,
+        updatedBy: displayName,
       });
     } else {
       setEditingId(null);
@@ -123,10 +172,10 @@ const KnowledgeBaseManager = () => {
         questionPattern: '',
         answer: '',
         categoryId: '',
-        departmentId: '',
+        departmentId: isSuperAdmin ? '' : adminDeptId || '',
         isPublished: false,
-        createdBy: 'Admin',
-        updatedBy: 'Admin',
+        createdBy: displayName,
+        updatedBy: displayName,
       });
     }
     setShowModal(true);
@@ -142,12 +191,18 @@ const KnowledgeBaseManager = () => {
     setError(null);
     setSuccess(null);
 
-    if (!formData.title.trim() || !formData.questionPattern.trim() || !formData.answer.trim()) {
+    if (
+      !formData.title.trim() ||
+      !formData.questionPattern.trim() ||
+      !formData.answer.trim()
+    ) {
       setError('Title, Question Pattern, and Answer are required');
       return;
     }
 
-    if (!formData.categoryId || !formData.departmentId) {
+    const effectiveDeptId = isSuperAdmin ? formData.departmentId : adminDeptId;
+
+    if (!formData.categoryId || !effectiveDeptId) {
       setError('Category and Department are required');
       return;
     }
@@ -158,10 +213,11 @@ const KnowledgeBaseManager = () => {
         questionPattern: formData.questionPattern,
         answer: formData.answer,
         category: { id: parseInt(formData.categoryId) },
-        department: { departmentId: parseInt(formData.departmentId) },
+        // dept admin cannot override department
+        department: { departmentId: parseInt(effectiveDeptId) },
         isPublished: formData.isPublished,
-        createdBy: formData.createdBy,
-        updatedBy: formData.updatedBy,
+        createdBy: formData.createdBy || displayName,
+        updatedBy: displayName,
       };
 
       if (editingId) {
@@ -181,7 +237,11 @@ const KnowledgeBaseManager = () => {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this knowledge base entry?')) {
+    if (
+      !window.confirm(
+        'Are you sure you want to delete this knowledge base entry?'
+      )
+    ) {
       return;
     }
 
@@ -210,13 +270,31 @@ const KnowledgeBaseManager = () => {
     return 'N/A';
   };
 
+  // 🔍 Filter list using search term
+  const filteredKbList = kbList.filter((kb) => {
+    if (!searchTerm.trim()) return true;
+    const term = searchTerm.toLowerCase();
+    return (
+      (kb.title || '').toLowerCase().includes(term) ||
+      (kb.questionPattern || '').toLowerCase().includes(term) ||
+      getCategoryName(kb).toLowerCase().includes(term) ||
+      getDepartmentName(kb).toLowerCase().includes(term)
+    );
+  });
+
+  const hasSearch = searchTerm.trim().length > 0;
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold text-gray-900">Knowledge Base</h2>
-          <p className="text-gray-600 text-sm mt-1">Manage KB articles and responses</p>
+          <p className="text-gray-600 text-sm mt-1">
+            {isSuperAdmin
+              ? 'Manage KB articles and responses'
+              : `Manage KB for ${adminDeptName}`}
+          </p>
         </div>
         <button
           onClick={() => handleOpenModal()}
@@ -225,6 +303,18 @@ const KnowledgeBaseManager = () => {
           <Plus size={20} />
           Add Article
         </button>
+      </div>
+
+      {/* 🔍 Search Bar (same style as Categories) */}
+      <div className="relative">
+        <Search size={20} className="absolute left-3 top-3 text-gray-400" />
+        <input
+          type="text"
+          placeholder="Search knowledge base..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        />
       </div>
 
       {/* Alerts */}
@@ -248,9 +338,13 @@ const KnowledgeBaseManager = () => {
           <div className="p-8 text-center">
             <p className="text-gray-500">Loading knowledge base...</p>
           </div>
-        ) : kbList.length === 0 ? (
+        ) : filteredKbList.length === 0 ? (
           <div className="p-8 text-center">
-            <p className="text-gray-500">No KB entries yet. Create your first one!</p>
+            <p className="text-gray-500">
+              {hasSearch
+                ? 'No KB entries match your search.'
+                : 'No KB entries yet. Create your first one!'}
+            </p>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -275,20 +369,25 @@ const KnowledgeBaseManager = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {kbList.map((kb) => (
+                {filteredKbList.map((kb) => (
                   <tr key={kb.kbId || kb.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4">
-                      <span className="font-medium text-gray-900">{kb.title}</span>
-                      {/*guard against null questionPattern */}
+                      <span className="font-medium text-gray-900">
+                        {kb.title}
+                      </span>
                       <div className="text-xs text-gray-500 mt-1">
                         Q: {(kb.questionPattern || '').substring(0, 40)}...
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <span className="text-gray-600 text-sm">{getCategoryName(kb)}</span>
+                      <span className="text-gray-600 text-sm">
+                        {getCategoryName(kb)}
+                      </span>
                     </td>
                     <td className="px-6 py-4">
-                      <span className="text-gray-600 text-sm">{getDepartmentName(kb)}</span>
+                      <span className="text-gray-600 text-sm">
+                        {getDepartmentName(kb)}
+                      </span>
                     </td>
                     <td className="px-6 py-4">
                       <span
@@ -337,6 +436,9 @@ const KnowledgeBaseManager = () => {
           isLoading={loading}
           categories={categories}
           departments={departments}
+          isSuperAdmin={isSuperAdmin}
+          adminDeptId={adminDeptId}
+          adminDeptName={adminDeptName}
         />
       )}
     </div>
@@ -353,6 +455,9 @@ const KBModal = ({
   isLoading,
   categories,
   departments,
+  isSuperAdmin,
+  adminDeptId,
+  adminDeptName,
 }) => {
   if (!isOpen) return null;
 
@@ -376,7 +481,9 @@ const KBModal = ({
               <input
                 type="text"
                 value={formData.title}
-                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, title: e.target.value })
+                }
                 placeholder="e.g., How to reset password?"
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 disabled={isLoading}
@@ -389,7 +496,9 @@ const KBModal = ({
               </label>
               <select
                 value={formData.categoryId}
-                onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, categoryId: e.target.value })
+                }
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 disabled={isLoading}
               >
@@ -406,19 +515,35 @@ const KBModal = ({
               <label className="block text-sm font-medium text-gray-900 mb-2">
                 Department *
               </label>
-              <select
-                value={formData.departmentId}
-                onChange={(e) => setFormData({ ...formData, departmentId: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                disabled={isLoading}
-              >
-                <option value="">Select a department</option>
-                {departments.map((dept) => (
-                  <option key={dept.departmentId || dept.id} value={dept.departmentId || dept.id}>
-                    {dept.deptName || dept.name}
-                  </option>
-                ))}
-              </select>
+
+              {isSuperAdmin ? (
+                <select
+                  value={formData.departmentId}
+                  onChange={(e) =>
+                    setFormData({ ...formData, departmentId: e.target.value })
+                  }
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  disabled={isLoading}
+                >
+                  <option value="">Select a department</option>
+                  {departments.map((dept) => (
+                    <option
+                      key={dept.departmentId || dept.id}
+                      value={dept.departmentId || dept.id}
+                    >
+                      {dept.deptName || dept.name}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <select
+                  value={adminDeptId || ''}
+                  disabled
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-700 cursor-not-allowed"
+                >
+                  <option value={adminDeptId || ''}>{adminDeptName}</option>
+                </select>
+              )}
             </div>
 
             <div className="md:col-span-2">
@@ -428,14 +553,19 @@ const KBModal = ({
               <textarea
                 value={formData.questionPattern}
                 onChange={(e) =>
-                  setFormData({ ...formData, questionPattern: e.target.value })
+                  setFormData({
+                    ...formData,
+                    questionPattern: e.target.value,
+                  })
                 }
                 placeholder="e.g., How do I reset my password? or reset password"
                 rows="2"
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 disabled={isLoading}
               />
-              <p className="text-xs text-gray-500 mt-1">Used for matching user queries</p>
+              <p className="text-xs text-gray-500 mt-1">
+                Used for matching user queries
+              </p>
             </div>
 
             <div className="md:col-span-2">
@@ -444,7 +574,9 @@ const KBModal = ({
               </label>
               <textarea
                 value={formData.answer}
-                onChange={(e) => setFormData({ ...formData, answer: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, answer: e.target.value })
+                }
                 placeholder="Provide a detailed answer or response..."
                 rows="4"
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
@@ -452,6 +584,7 @@ const KBModal = ({
               />
             </div>
 
+            {/* Created By – locked */}
             <div>
               <label className="block text-sm font-medium text-gray-900 mb-2">
                 Created By
@@ -459,10 +592,8 @@ const KBModal = ({
               <input
                 type="text"
                 value={formData.createdBy}
-                onChange={(e) => setFormData({ ...formData, createdBy: e.target.value })}
-                placeholder="Admin"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                disabled={isLoading}
+                readOnly
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-700 cursor-not-allowed"
               />
             </div>
 
@@ -472,12 +603,17 @@ const KBModal = ({
                   type="checkbox"
                   checked={formData.isPublished}
                   onChange={(e) =>
-                    setFormData({ ...formData, isPublished: e.target.checked })
+                    setFormData({
+                      ...formData,
+                      isPublished: e.target.checked,
+                    })
                   }
                   className="h-4 w-4 border-gray-300 rounded"
                   disabled={isLoading}
                 />
-                <span className="text-sm font-medium text-gray-900">Publish</span>
+                <span className="text-sm font-medium text-gray-900">
+                  Publish
+                </span>
               </label>
             </div>
           </div>
