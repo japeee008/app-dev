@@ -1,5 +1,8 @@
 package com.appdevg5.powerpuff.citucare.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import java.time.LocalDateTime;
+
 public class KnowledgeBaseDto {
 
     private Long kbId;
@@ -10,7 +13,12 @@ public class KnowledgeBaseDto {
     private String createdBy;
     private String updatedBy;
 
-    // nested objects – ModelMapper can map these automatically
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime createdAt;
+
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime updatedAt;
+
     private CategoryDto category;
     private DepartmentDto department;
 
@@ -72,6 +80,24 @@ public class KnowledgeBaseDto {
 
     public void setUpdatedBy(String updatedBy) {
         this.updatedBy = updatedBy;
+    }
+
+    //TIMESTAMP GETTERS/SETTERS
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
     }
 
     public CategoryDto getCategory() {

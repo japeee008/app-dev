@@ -22,7 +22,10 @@ public class UserService {
 
     public List<User> findAll() { return userRepository.findAllWithDepartment(); }
 
-    public User findById(Long id) { return userRepository.findById(id).orElse(null); }
+    public User findById(Long id) {
+    return userRepository.findById(id).orElse(null);
+    }
+
 
     public void deleteById(Long id) { userRepository.deleteById(id); }
 }

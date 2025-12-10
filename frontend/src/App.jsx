@@ -1,4 +1,5 @@
 import React from 'react';
+import AdminRoute from "./routes/AdminRoute";
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import ChatContainer from './components/ChatContainer';
 import AdminPanel from './pages/AdminPanel';
@@ -21,7 +22,14 @@ function App() {
               }
             />
             <Route path="/admin-login" element={<LoginPage />} /> 
-            <Route path="/admin" element={<AdminPanel />} />
+            <Route
+              path="/admin/*"
+              element={
+                <AdminRoute>
+                  <AdminPanel />
+                </AdminRoute>
+              }
+            />
           </Routes>
         </Router>
       </ChatProvider>

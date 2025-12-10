@@ -1,6 +1,5 @@
-import React, { useState, useRef, useEffect } from "react";
-import { X, Plus, MessageSquare, Settings, UserCog } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import React from "react";
+import { X, Plus, MessageSquare } from "lucide-react";
 
 const Sidebar = ({
   isOpen,
@@ -10,22 +9,6 @@ const Sidebar = ({
   selectedCategory,
   onSelectCategory,
 }) => {
-  const [showSettingsMenu, setShowSettingsMenu] = useState(false);
-  const settingsRef = useRef(null);
-  const navigate = useNavigate();
-
-  // Close popup when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (settingsRef.current && !settingsRef.current.contains(e.target)) {
-        setShowSettingsMenu(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
   return (
     <>
       {/* Overlay for mobile */}
@@ -42,15 +25,15 @@ const Sidebar = ({
           isOpen ? "translate-x-0" : "-translate-x-full"
         } fixed md:static md:translate-x-0 w-64 h-screen bg-primary text-white transition-transform duration-300 ease-in-out z-50 flex flex-col`}
       >
-        {/* Logo Section */}
-        <div className="flex items-center justify-center p-9 border-b border-primary">
-          <img
-            src="/wildcare.jpg"
-            alt="WildCare Logo"
-            className="h-15 w-15 object-contain"
-            onError={(e) => (e.target.style.display = "none")}
-          />
-        </div>
+<div className="flex items-center justify-center py-6 border-b border-primary">
+  <img
+    src="/wildcare.jpg"
+    alt="CITU CARE Logo"
+    className="w-32 h-32 object-contain"
+    onError={(e) => (e.target.style.display = "none")}
+  />
+</div>
+
 
         {/* New Chat Button */}
         <button
@@ -92,33 +75,7 @@ const Sidebar = ({
           )}
         </div>
 
-        {/* SETTINGS + POPUP */}
-        <div className="border-t border-primary p-4 relative" ref={settingsRef}>
-          {/* Settings Button */}
-          <button
-            onClick={() => setShowSettingsMenu((prev) => !prev)}
-            className="w-full flex items-center gap-3 px-3 py-2 hover:bg-gray-800 rounded-lg transition-colors"
-          >
-            <Settings size={18} />
-            <span className="text-sm">Settings</span>
-          </button>
-
-          {/* Popup Menu */}
-          {showSettingsMenu && (
-            <div className="absolute bottom-14 left-4 w-56 bg-gray-900 text-white rounded-lg shadow-lg border border-gray-700 py-2 z-50 animate-fadeIn">
-              <button
-                onClick={() => {
-                  setShowSettingsMenu(false);
-                  navigate("/admin-login");
-                }}
-                className="w-full flex items-center gap-2 px-3 py-2 hover:bg-gray-800 text-sm text-left"
-              >
-                <UserCog size={16} className="text-white" />
-                <span>Admin Login</span>
-              </button>
-            </div>
-          )}
-        </div>
+        {/* Footer intentionally left empty – no Settings/Admin buttons */}
       </div>
     </>
   );
