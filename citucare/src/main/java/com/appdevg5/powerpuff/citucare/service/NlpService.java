@@ -93,18 +93,20 @@ public class NlpService {
     // ----------------------------------------------------------
     // TF-IDF INDEXING
     // ----------------------------------------------------------
+    
     private void indexKnowledgeBase() {
         docs.clear();
         tfidfVectors.clear();
         idf.clear();
 
-        docs.addAll(kbRepo.findAll());
+        // 🔹 Only index PUBLISHED KB entries
+        List<KnowledgeBase> publishedDocs = kbRepo.findByIsPublished(true);
+        docs.addAll(publishedDocs);
 
         List<Map<String, Integer>> termFreqs = new ArrayList<>();
         Map<String, Integer> docCounts = new HashMap<>();
 
         for (KnowledgeBase doc : docs) {
-
             String text =
                     (doc.getTitle() == null ? "" : doc.getTitle()) + " " +
                     (doc.getQuestionPattern() == null ? "" : doc.getQuestionPattern()) + " " +
@@ -149,6 +151,7 @@ public class NlpService {
             tfidfVectors.add(vec);
         }
     }
+
 
     // ----------------------------------------------------------
     // TYPO HANDLING (Levenshtein)
