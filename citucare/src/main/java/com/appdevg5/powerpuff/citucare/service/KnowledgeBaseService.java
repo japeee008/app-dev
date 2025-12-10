@@ -23,8 +23,6 @@ public class KnowledgeBaseService {
     @Autowired
     private NlpService nlpService;
 
-    // ============ SAVE ============
-
     public KnowledgeBase save(KnowledgeBase kb) {
         LocalDateTime now = LocalDateTime.now();
         if (kb.getCreatedAt() == null) {
@@ -41,8 +39,6 @@ public class KnowledgeBaseService {
         return saved;
     }
 
-    // ============ BASIC CRUD ============
-
     public List<KnowledgeBase> findAll() {
         return kbRepository.findAll();
     }
@@ -58,8 +54,6 @@ public class KnowledgeBaseService {
             nlpService.rebuildIndex();
         } catch (Exception ignored) {}
     }
-
-    // ============ DTO METHODS ============
 
     public List<KnowledgeBaseDto> getAllKnowledgeBaseDtos() {
         return kbRepository.findAll().stream()
@@ -79,13 +73,22 @@ public class KnowledgeBaseService {
             return null;
         }
 
-        List<NlpService.SearchResult> results = nlpService.search(userMessage, 1);
+        // get top 3 just in case, we only use the best for now
+        List<NlpService.SearchResult> results = nlpService.search(userMessage, 3);
 
         if (results.isEmpty()) {
             return null;
         }
 
-        Long bestId = results.get(0).getId();
-        return kbRepository.findById(bestId).orElse(null);
+        NlpService.SearchResult best = results.get(0);
+
+        //if similarity is too low, treat as "no answer"
+        double MIN_SCORE = 0.15; // try 0.10–0.25 and adjust
+        if (best.getScore() < MIN_SCORE) {
+            return null;
+        }
+
+        return kbRepository.findById(best.getId()).orElse(null);
     }
+
 }
