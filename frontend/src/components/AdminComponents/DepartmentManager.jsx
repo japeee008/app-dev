@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Plus, Edit2, Trash2, AlertCircle, CheckCircle } from 'lucide-react';
+import { Plus, Edit2, Trash2, AlertCircle, CheckCircle, Search } from 'lucide-react';
 import axios from 'axios';
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080/api';
@@ -12,6 +12,7 @@ const DepartmentManager = () => {
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [formData, setFormData] = useState({ deptName: '', email: '' });
+  const [searchTerm, setSearchTerm] = useState(''); // 🔍 NEW
 
   useEffect(() => {
     fetchDepartments();
@@ -95,6 +96,15 @@ const DepartmentManager = () => {
     }
   };
 
+  // 🔍 Filtered list (same idea as Categories page)
+  const filteredDepartments = departments.filter((dept) => {
+    const name = (dept.deptName || '').toLowerCase();
+    const email = (dept.email || '').toLowerCase();
+    const term = searchTerm.toLowerCase();
+
+    return name.includes(term) || email.includes(term);
+  });
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -127,18 +137,30 @@ const DepartmentManager = () => {
         </div>
       )}
 
+      {/* 🔍 Search Bar */}
+      <div className="relative">
+        <Search size={20} className="absolute left-3 top-3 text-gray-400" />
+        <input
+          type="text"
+          placeholder="Search departments..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        />
+      </div>
+
       {/* Departments Table */}
       <div className="bg-white rounded-lg shadow overflow-hidden">
         {loading ? (
           <div className="p-8 text-center">
             <p className="text-gray-500">Loading departments...</p>
           </div>
-        ) : departments.length === 0 ? (
+        ) : filteredDepartments.length === 0 ? (
           <div className="p-8 text-center">
             <p className="text-gray-500">
               {departments.length === 0
                 ? 'No departments yet. Create your first one!'
-                : 'No departments found.'}
+                : 'No departments match your search.'}
             </p>
           </div>
         ) : (
@@ -161,7 +183,7 @@ const DepartmentManager = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {departments.map((dept) => (
+                {filteredDepartments.map((dept) => (
                   <tr key={dept.departmentId || dept.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4">
                       <span className="font-medium text-gray-900">
@@ -175,7 +197,9 @@ const DepartmentManager = () => {
                     </td>
                     <td className="px-6 py-4">
                       <span className="text-gray-500 text-sm">
-                        {dept.createdAt ? new Date(dept.createdAt).toLocaleDateString() : '—'}
+                        {dept.createdAt
+                          ? new Date(dept.createdAt).toLocaleDateString()
+                          : '—'}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-right">
