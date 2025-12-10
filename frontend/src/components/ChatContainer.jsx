@@ -26,11 +26,11 @@ const ChatContainer = () => {
 
   // 💬 Suggested questions for the empty state
   const suggestedQuestions = [
-    "Where is the registrar's office located?",
+    "How to apply as a new student?",
     "What are the requirements for enrolling in college?",
     "Where do I access my grades?",
     "How do I reset my student portal password?",
-    "What programs are offered this semester?"
+    "Can I pay my tuition in installments?"
   ];
 
   // Auto-scroll to bottom when new messages arrive
