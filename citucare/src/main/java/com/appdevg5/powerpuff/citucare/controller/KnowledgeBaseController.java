@@ -1,23 +1,33 @@
 package com.appdevg5.powerpuff.citucare.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import com.appdevg5.powerpuff.citucare.entity.KnowledgeBase;
+import com.appdevg5.powerpuff.citucare.entity.User;
 import com.appdevg5.powerpuff.citucare.service.KnowledgeBaseService;
 import com.appdevg5.powerpuff.citucare.dto.KnowledgeBaseDto;
+import com.appdevg5.powerpuff.citucare.repository.UserRepository;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 @RestController
 @RequestMapping("/api/kb")
 @CrossOrigin(origins = "http://localhost:3000")
+@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN')")
 public class KnowledgeBaseController {
 
     @Autowired
     private KnowledgeBaseService kbService;
 
-  @GetMapping
+    @Autowired
+    private UserRepository userRepository;  // ← Add this field
+
+    @GetMapping
     public List<KnowledgeBaseDto> all() {
-        return kbService.getAllKnowledgeBaseDtos();
+        User currentUser = getCurrentUser();
+        return kbService.getAllKnowledgeBaseDtosForUser(currentUser);
     }
 
     @PostMapping
@@ -46,5 +56,11 @@ public class KnowledgeBaseController {
     @DeleteMapping("/{id}")
     public void delete(@PathVariable Long id) {
         kbService.deleteById(id);
+    }
+
+    private User getCurrentUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+        return userRepository.findByEmail(email).orElse(null);
     }
 }

@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 import com.appdevg5.powerpuff.citucare.entity.Category;
+import com.appdevg5.powerpuff.citucare.entity.User;  // ← Add this import
 import com.appdevg5.powerpuff.citucare.repository.CategoryRepository;
 
 @Service
@@ -22,6 +23,11 @@ public class CategoryService {
     }
 
     public List<Category> getAllCategories() {
+        return categoryRepository.findAll();
+    }
+
+    public List<Category> getAllCategoriesForUser(User currentUser) {
+        // Categories are global, so all users can see all categories
         return categoryRepository.findAll();
     }
 

@@ -22,6 +22,16 @@ public class UserService {
 
     public List<User> findAll() { return userRepository.findAllWithDepartment(); }
 
+    public List<User> findAllForUser(User currentUser) {
+        if ("SUPERADMIN".equals(currentUser.getRole())) {
+            return userRepository.findAllWithDepartment();
+        } else if ("ADMIN".equals(currentUser.getRole())) {
+            return userRepository.findByDepartmentId(currentUser.getDepartment().getDepartmentId());
+        } else {
+            return List.of(); // No access for other roles
+        }
+    }
+
     public User findById(Long id) {
     return userRepository.findById(id).orElse(null);
     }

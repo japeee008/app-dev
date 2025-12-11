@@ -2,6 +2,7 @@ package com.appdevg5.powerpuff.citucare.service;
 
 import com.appdevg5.powerpuff.citucare.dto.KnowledgeBaseDto;
 import com.appdevg5.powerpuff.citucare.entity.KnowledgeBase;
+import com.appdevg5.powerpuff.citucare.entity.User;
 import com.appdevg5.powerpuff.citucare.repository.KnowledgeBaseRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,6 +58,20 @@ public class KnowledgeBaseService {
 
     public List<KnowledgeBaseDto> getAllKnowledgeBaseDtos() {
         return kbRepository.findAll().stream()
+                .map(kb -> modelMapper.map(kb, KnowledgeBaseDto.class))
+                .collect(Collectors.toList());
+    }
+
+    public List<KnowledgeBaseDto> getAllKnowledgeBaseDtosForUser(User currentUser) {
+        List<KnowledgeBase> kbs;
+        if ("SUPERADMIN".equals(currentUser.getRole())) {
+            kbs = kbRepository.findAll();
+        } else if ("ADMIN".equals(currentUser.getRole())) {
+            kbs = kbRepository.findByDepartment_DepartmentId(currentUser.getDepartment().getDepartmentId());
+        } else {
+            kbs = List.of(); // No access for other roles
+        }
+        return kbs.stream()
                 .map(kb -> modelMapper.map(kb, KnowledgeBaseDto.class))
                 .collect(Collectors.toList());
     }

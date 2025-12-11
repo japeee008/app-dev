@@ -30,7 +30,7 @@ const chatService = {
   // Get available categories
   getCategories: async () => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/categories`);
+      const response = await axios.get(`${API_BASE_URL}/categories/public`);
       return response.data;
     } catch (error) {
       console.error('Error fetching categories:', error);

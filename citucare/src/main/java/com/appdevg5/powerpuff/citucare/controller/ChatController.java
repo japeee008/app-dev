@@ -19,7 +19,7 @@ import com.appdevg5.powerpuff.citucare.service.SessionService;
 
 @RestController
 @RequestMapping("/api/chat")
-@CrossOrigin(origins = "http://localhost:3000") // add if frontend is React on 3000
+@CrossOrigin(origins = "http://localhost:3000")
 public class ChatController {
 
     @Autowired
@@ -29,7 +29,7 @@ public class ChatController {
     private SessionService sessionService;
 
     @Autowired
-    private KnowledgeBaseService knowledgeBaseService; // ✅ NEW
+    private KnowledgeBaseService knowledgeBaseService;
 
     @PostMapping
     public ResponseEntity<?> sendMessage(@RequestBody Map<String, Object> payload) {

@@ -2,6 +2,7 @@ package com.appdevg5.powerpuff.citucare.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -11,9 +12,13 @@ import com.appdevg5.powerpuff.citucare.entity.User;
 import com.appdevg5.powerpuff.citucare.entity.Department;
 import com.appdevg5.powerpuff.citucare.service.UserService;
 import com.appdevg5.powerpuff.citucare.repository.DepartmentRepository;
+import com.appdevg5.powerpuff.citucare.repository.UserRepository;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 @RestController
 @RequestMapping("/api/users")
+// @PreAuthorize("hasRole('Admin') or hasRole('Superadmin')") // Temporarily disabled to allow setting isAdmin
 public class UserController {
 
     @Autowired
@@ -22,9 +27,13 @@ public class UserController {
     @Autowired
     private DepartmentRepository departmentRepository;
 
+    @Autowired
+    private UserRepository userRepository;
+
     @GetMapping
     public List<User> all() {
-        return userService.findAll();
+        User currentUser = getCurrentUser();
+        return userService.findAllForUser(currentUser);
     }
 
     @PostMapping
@@ -101,5 +110,11 @@ public class UserController {
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         userService.deleteById(id);
         return ResponseEntity.noContent().build();
+    }
+
+    private User getCurrentUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+        return userRepository.findByEmail(email).orElse(null);
     }
 }

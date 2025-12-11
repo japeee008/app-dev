@@ -5,8 +5,10 @@ import com.appdevg5.powerpuff.citucare.dto.AdminLoginResponseDto;
 import com.appdevg5.powerpuff.citucare.entity.Department;
 import com.appdevg5.powerpuff.citucare.entity.User;
 import com.appdevg5.powerpuff.citucare.repository.UserRepository;
+import com.appdevg5.powerpuff.citucare.config.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -15,6 +17,12 @@ public class AuthService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private JwtUtil jwtUtil;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     public AdminLoginResponseDto loginAdmin(AdminLoginRequestDto request) {
 
@@ -33,7 +41,7 @@ public class AuthService {
                                 "Invalid email or password"
                         ));
 
-        if (!user.getPassword().equals(request.getPassword())) {
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new ResponseStatusException(
                     HttpStatus.UNAUTHORIZED,
                     "Invalid email or password"
@@ -53,12 +61,14 @@ public class AuthService {
             );
         }
 
+        String token = jwtUtil.generateToken(user.getEmail(), user.getRole());
+
         AdminLoginResponseDto dto = new AdminLoginResponseDto();
         dto.setUserId(user.getUserId());
         dto.setFname(user.getFname());
         dto.setLname(user.getLname());
         dto.setEmail(user.getEmail());
-        dto.setRole(user.getRole());
+        dto.setToken(token);
 
         Department dept = user.getDepartment();
         if (dept != null) {

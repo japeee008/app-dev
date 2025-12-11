@@ -6,7 +6,7 @@ public class AdminLoginResponseDto {
     private String fname;
     private String lname;
     private String email;
-    private String role;
+    private String token;
 
     private Long departmentId;
     private String departmentName;
@@ -45,12 +45,12 @@ public class AdminLoginResponseDto {
         this.email = email;
     }
 
-    public String getRole() {
-        return role;
+    public String getToken() {
+        return token;
     }
-    
-    public void setRole(String role) {
-        this.role = role;
+
+    public void setToken(String token) {
+        this.token = token;
     }
 
     public Long getDepartmentId() {
