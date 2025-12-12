@@ -14,10 +14,13 @@ public class WebConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
+                        // must match EXACT front-end origin
                         .allowedOrigins("http://localhost:3000")
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                         .allowedHeaders("*")
-                        .allowCredentials(true);
+                        .allowCredentials(true)
+                        // expose Set-Cookie so browser can see cookie headers in debug; not strictly required to receive cookie
+                        .exposedHeaders("Set-Cookie");
             }
         };
     }
