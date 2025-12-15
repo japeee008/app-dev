@@ -5,16 +5,54 @@ import com.appdevg5.powerpuff.citucare.dto.AdminLoginResponseDto;
 import com.appdevg5.powerpuff.citucare.entity.Department;
 import com.appdevg5.powerpuff.citucare.entity.User;
 import com.appdevg5.powerpuff.citucare.repository.UserRepository;
+
+import jakarta.annotation.PostConstruct;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
+
 
 @Service
 public class AuthService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+
+
+
+// @PostConstruct
+// public void forceResetSuperAdminPassword() {
+//     userRepository.findByEmailIgnoreCase("superadmin@cit.edu")
+//         .ifPresent(user -> {
+//             user.setPassword(passwordEncoder.encode("admin123"));
+//             userRepository.save(user);
+//             System.out.println("✅ SuperAdmin password forcibly reset");
+//         });
+// }
+
+// @PostConstruct
+// public void migratePlainPasswordsToBCrypt() {
+//     userRepository.findAll().forEach(user -> {
+
+//         // Only hash passwords that are NOT already BCrypt
+//         if (user.getPassword() != null && !user.getPassword().startsWith("$2a$")) {
+//             user.setPassword(passwordEncoder.encode(user.getPassword()));
+//             userRepository.save(user);
+//         }
+//     });
+
+//     System.out.println("✅ Existing user passwords migrated to BCrypt");
+// }
+
+
 
     public AdminLoginResponseDto loginAdmin(AdminLoginRequestDto request) {
 
@@ -33,12 +71,13 @@ public class AuthService {
                                 "Invalid email or password"
                         ));
 
-        if (!user.getPassword().equals(request.getPassword())) {
-            throw new ResponseStatusException(
-                    HttpStatus.UNAUTHORIZED,
-                    "Invalid email or password"
-            );
-        }
+            if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+                throw new ResponseStatusException(
+                        HttpStatus.UNAUTHORIZED,
+                        "Invalid email or password"
+                );
+            }
+
 
         System.out.println(
                 "DEBUG LOGIN => email=" + user.getEmail()
