@@ -28,29 +28,29 @@ public class AuthService {
 
 
 
-// @PostConstruct
-// public void forceResetSuperAdminPassword() {
-//     userRepository.findByEmailIgnoreCase("superadmin@cit.edu")
-//         .ifPresent(user -> {
-//             user.setPassword(passwordEncoder.encode("admin123"));
-//             userRepository.save(user);
-//             System.out.println("✅ SuperAdmin password forcibly reset");
-//         });
-// }
+@PostConstruct
+public void forceResetSuperAdminPassword() {
+    userRepository.findByEmailIgnoreCase("superadmin@cit.edu")
+        .ifPresent(user -> {
+            user.setPassword(passwordEncoder.encode("admin123"));
+            userRepository.save(user);
+            System.out.println("✅ SuperAdmin password forcibly reset");
+        });
+}
 
-// @PostConstruct
-// public void migratePlainPasswordsToBCrypt() {
-//     userRepository.findAll().forEach(user -> {
+            @PostConstruct
+            public void migratePlainPasswordsToBCrypt() {
+                userRepository.findAll().forEach(user -> {
 
-//         // Only hash passwords that are NOT already BCrypt
-//         if (user.getPassword() != null && !user.getPassword().startsWith("$2a$")) {
-//             user.setPassword(passwordEncoder.encode(user.getPassword()));
-//             userRepository.save(user);
-//         }
-//     });
+                    // Only hash passwords that are NOT already BCrypt
+                    if (user.getPassword() != null && !user.getPassword().startsWith("$2a$")) {
+                        user.setPassword(passwordEncoder.encode(user.getPassword()));
+                        userRepository.save(user);
+                    }
+                });
 
-//     System.out.println("✅ Existing user passwords migrated to BCrypt");
-// }
+                System.out.println("✅ Existing user passwords migrated to BCrypt");
+            }
 
 
 
