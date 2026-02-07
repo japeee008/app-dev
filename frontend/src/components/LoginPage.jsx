@@ -23,7 +23,7 @@ const LoginPage = () => {
         localStorage.setItem('isAdmin', 'true');
       } catch (e) {}
 
-      navigate('/admin');
+      navigate('/admin', {replace: true});
     }).catch(err => {
       console.error('login error', err);
       if (err.response && err.response.data && err.response.data.message) {
